@@ -1,8 +1,12 @@
+[![Published on webcomponents.org](https://img.shields.io/badge/webcomponents.org-published-blue.svg)](https://www.webcomponents.org/element/CaptainCodeman/dry-stone-layout)
+
 _[Demo and API docs](http://captaincodeman.github.io/dry-stone-layout/)_
 
 # \<dry-stone-layout\>
 
-`dry-stone-layout` is a layout element that creates a masonry-like layout with no gaps.
+`dry-stone-layout` is a layout element that creates a masonry-like layout with no gaps
+perfect for responsive image galleries. If you've ever seen dry-stone walls in the UK,
+you'll understand the name.
 
 ![Example](demo/screenshot.png)
 
