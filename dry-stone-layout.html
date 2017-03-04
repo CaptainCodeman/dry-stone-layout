@@ -16,6 +16,7 @@ Masonry-like layout with no gaps
         position: relative;
         overflow: hidden;
         contain: content;
+        line-height: 0;
       }
 
       #container[loading] ::slotted(*) {
@@ -39,8 +40,6 @@ Masonry-like layout with no gaps
       behaviors: [
         Polymer.IronResizableBehavior
       ],
-
-      // TODO: fire events to notify of rendering, height changes etc...
 
       properties: {
         /* target height for each item row */
@@ -68,6 +67,13 @@ Masonry-like layout with no gaps
           reflectToAttribute: true
         },
 
+        /* disabled flag to prevent layout calculations */
+        disabled: {
+          type: Boolean,
+          value: false,
+          reflectToAttribute: true
+        },
+
         _elements: {
           type: Array
         },
@@ -83,13 +89,13 @@ Masonry-like layout with no gaps
         },
 
         _layout: {
-          type: Object,
-          computed: '_computeLayout(targetHeight, spacing, _totalWidth, _width)'
+          type: Object
         }
       },
 
       observers: [
-        '_layoutChanged(_layout)'
+        '_layoutChanged(_layout, disabled)',
+        '_layoutNeeded(targetHeight, spacing, _totalWidth, _width, disabled)'
       ],
 
       listeners: {
@@ -124,7 +130,9 @@ Masonry-like layout with no gaps
       },
 
       // update the element positions and sizes using css transform
-      _layoutChanged: function(layout) {
+      _layoutChanged: function(layout, disabled) {
+        if (disabled || !layout) return;
+
         requestAnimationFrame(() => {
           layout.positions.forEach((position, i) => {
             var scaleX, scaleY, style;
@@ -160,18 +168,12 @@ Masonry-like layout with no gaps
       },
 
       // if the elements change or the container size changes we re-compute the element positions
-      _computeLayout(targetHeight, spacing, totalWidth, width) {
-        var dimensions = this._dimensions;
-
-        const emptyLayout = {
-          width: width,
-          height: 0,
-          positions: []
-        };
-        if (!totalWidth || !width) return emptyLayout;
+      _layoutNeeded(targetHeight, spacing, totalWidth, width, disabled) {
+        if (disabled || !totalWidth || !width) return;
 
         var i, j, k, n, positions = [], elementCount;
 
+        var dimensions = this._dimensions;
         var containerWidth = width;
         var idealHeight = targetHeight;
         var summedWidth = totalWidth;
@@ -266,7 +268,7 @@ Masonry-like layout with no gaps
           }
         }
 
-        return {
+        this._layout = {
           width: containerWidth,
           height: ySum,
           positions: positions
