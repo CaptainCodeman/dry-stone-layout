@@ -1,11 +1,11 @@
 {
   "name": "dry-stone-layout",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Masonry-like layout with no gaps",
   "authors": [
     "Simon Green <simon@captaincodeman.com>"
   ],
-  "main": "dry-stone.html",
+  "main": "dry-stone-layout.html",
   "repository": {
     "type": "git",
     "url": "git://github.com/github.com/CaptainCodeman/dry-stone-layout.git"
