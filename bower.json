@@ -1,6 +1,6 @@
 {
   "name": "dry-stone-layout",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Masonry-like layout with no gaps",
   "authors": [
     "Simon Green <simon@captaincodeman.com>"

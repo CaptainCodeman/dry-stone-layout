@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
 
-    <title>dry-stone demo</title>
+    <title>dry-stone-layout demo</title>
 
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
 
@@ -72,14 +72,16 @@
           </dry-stone-layout>
         </template>
         <script>
-          dynamic.items = [];
-          dynamic.create = function() {
-            var items = [];
-            for(var i = 0; i < 100; i++) {
-              items.push('rgb'.charAt(Math.floor(Math.random() * 3)));
-            }
-            dynamic.items = items;
-          };
+          document.addEventListener('WebComponentsReady', function() {
+            dynamic.items = [];
+            dynamic.create = function() {
+              var items = [];
+              for(var i = 0; i < 100; i++) {
+                items.push('rgb'.charAt(Math.floor(Math.random() * 3)));
+              }
+              dynamic.items = items;
+            };
+          });
         </script>
       </demo-snippet>
     </div>

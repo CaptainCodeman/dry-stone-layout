@@ -114,28 +114,35 @@ Masonry-like layout with no gaps
         Polymer.dom(this.$.content).unobserveNodes(this._observer);
       },
 
+      get parent() {
+        if (this.parentNode.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
+          return this.parentNode.host;
+        }
+        return this.parentNode;
+      },
+
       _onIronResize: function() {
         if (this._width) {
           // throttle layout calculations after first one
           this.debounce('resize', function(){
-            this._width = this.clientWidth;
+            this._width = this.parent.clientWidth;
           }, this.throttle);
         } else {
-          this._width = this.clientWidth;
+          this._width = this.parent.clientWidth;
         }
       },
 
       _childNodesChanged: function(e) {
-        let nodes = this.getEffectiveChildren();
-        this._elements = nodes.filter(node => node.nodeType == Node.ELEMENT_NODE && node.tagName !== "TEMPLATE");
+        var nodes = this.getEffectiveChildren();
+        this._elements = nodes.filter(function(node) { return node.nodeType == Node.ELEMENT_NODE && node.tagName !== "TEMPLATE" });
       },
 
       // update the element positions and sizes using css transform
       _layoutChanged: function(layout, disabled) {
         if (disabled || !layout) return;
 
-        requestAnimationFrame(() => {
-          layout.positions.forEach((position, i) => {
+        requestAnimationFrame(function() {
+          layout.positions.forEach(function(position, i) {
             var scaleX, scaleY, style;
             var dimension = this._dimensions[i];
             var aspect = dimension.aspect;
@@ -144,7 +151,7 @@ Masonry-like layout with no gaps
             var transform = 'translate(' + position.x + 'px,' + position.y + 'px) scale(' + scaleX.toFixed(6) + ',' + scaleY.toFixed(6) + ')';
             var element = this._elements[i];
             element.style.transform = transform;
-          });
+          }.bind(this));
 
           // update our own height to account for the new layout and notify anyone who cares
           this.height = layout.height;
@@ -153,19 +160,19 @@ Masonry-like layout with no gaps
 
           // remove loading style override which prevented animation of the initial layout
           if (this.loading && layout.positions.length > 0) {
-            this.async(() => this.loading = false, 1);
+            this.async(function() { this.loading = false }, 1);
           }
-        });
+        }.bind(this));
       },
 
       // get the dimensions from the elements
       _computeDimensions(elements) {
-        return elements.map(node => ({ width: node.clientWidth, height: node.clientHeight, aspect: node.clientWidth / node.clientHeight }));
+        return elements.map(function(node) { return { width: node.clientWidth, height: node.clientHeight, aspect: node.clientWidth / node.clientHeight }});
       },
 
       // this is the notional width of all the elements in a single row at the ideal target height
       _computeTotalWidth(dimensions, targetHeight) {
-        return dimensions.reduce((total, dimension) => total += targetHeight * dimension.aspect, 0);
+        return dimensions.reduce(function(total, dimension) { return total + targetHeight * dimension.aspect}, 0);
       },
 
       // if the elements change or the container size changes we re-compute the element positions
@@ -205,7 +212,7 @@ Masonry-like layout with no gaps
           ySum = idealHeight;
         } else {
           // (2b) Distribute elements over rows using the aspect ratio as weight
-          var weights = dimensions.map(d => d.aspect * 100);
+          var weights = dimensions.map(function(d) { return d.aspect * 100; });
           var partitions = this._linear_partition(weights, rowsNeeded);
           var index = 0;
           var ySum = 0, xSum;
