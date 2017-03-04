@@ -125,8 +125,6 @@ Masonry-like layout with no gaps
 
       // update the element positions and sizes using css transform
       _layoutChanged: function(layout) {
-        // TODO: adjust height first if expanding, last if shrinking.
-        //       Listen for elements animation end or animate with them
         requestAnimationFrame(() => {
           layout.positions.forEach((position, i) => {
             var scaleX, scaleY, style;
@@ -139,9 +137,10 @@ Masonry-like layout with no gaps
             element.style.transform = transform;
           });
 
-          // update our own height to account for the new layout
+          // update our own height to account for the new layout and notify anyone who cares
           this.height = layout.height;
           this.style.height = layout.height + 'px';
+          this.fire('rendered');
 
           // remove loading style override which prevented animation of the initial layout
           if (this.loading && layout.positions.length > 0) {
@@ -374,5 +373,11 @@ Masonry-like layout with no gaps
         ].concat(ans);
       }
     });
+
+    /**
+     * Fired when the layout is rendered.
+     *
+     * @event rendered
+     */
   </script>
 </dom-module>
