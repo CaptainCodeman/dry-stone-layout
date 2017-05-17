@@ -1,0 +1,51 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../paper-button/paper-button.html">
+<link rel="import" href="../dry-stone-layout.html">
+
+<dom-module id="x-dynamic">
+  <template>
+    <style>
+      dry-stone-layout { transition: height 0.5s ease-in-out; }
+      img { transition: transform 0.5s ease-in-out; }
+      .r, .g, .b { transition: transform 0.5s ease-in-out; }
+      .r { width: 240px; height: 240px; background-color: #caa; }
+      .g { width: 160px; height: 240px; background-color: #aca; }
+      .b { width: 240px; height: 160px; background-color: #aac; }
+      p, dry-stone-layout { clear: both; }
+    </style>
+
+    <p><paper-button raised noink on-tap="createItems">Create Divs</paper-button></p>
+    <dry-stone-layout target-height="90" spacing="1">
+      <template is="dom-repeat" items="[[items]]">
+        <div class$="[[item]]"></div>
+      </template>
+    </dry-stone-layout>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'x-dynamic',
+
+      properties: {
+        items: {
+          type: Array,
+          value: function() {
+            return [];
+          }
+        }
+      },
+
+      createItems: function() {
+        var items = [];
+        for(var i = 0; i < 100; i++) {
+          items.push('rgb'.charAt(Math.floor(Math.random() * 3)));
+        }
+        this.items = items;
+      },
+
+      random: function() {
+        return Math.round(Math.random() * 1000);
+      }
+    });
+  </script>
+</dom-module>
