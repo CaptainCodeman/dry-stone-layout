@@ -1,45 +1,31 @@
 (function() {
-const template = document.createElement('template');
-template.innerHTML = `
-<style>
-:host {
-  display: block;
-  position: relative;
-  overflow: hidden;
-  contain: content;
-  line-height: 0;
-}
-
-::slotted(*) {
-  position: absolute;
-  transform-origin: 0 0;
-}
-</style>
-<slot id="content"></slot>`;
-ShadyCSS.prepareTemplate(template, 'dry-stone-layout');
-
 class DryStoneLayoutElement extends HTMLElement {
   static get observedAttributes() {
-    return ['disabled', 'spacing', 'target-height', 'debounce', 'width'];
+    return ['disabled', 'spacing', 'target-height', 'debounce', 'width', 'chunk'];
   }
 
   constructor() {
     super();
 
+    this._slot = document.createElement('slot');
     let shadowRoot = this.attachShadow({mode: 'open'});
-    shadowRoot.appendChild(document.importNode(template.content, true));
-
-    this._slot = this.shadowRoot.querySelector('#content');
+    shadowRoot.appendChild(this._slot);
 
     this.loading = true;
     this.spacing = 1;
     this.targetHeight = 90;
     this.debounce = 60
+    this._needsRender = true;
   }
 
   connectedCallback() {
     this.setAttribute('loading', '');
-    ShadyCSS.styleElement(this);
+
+    this.style.display = 'block';
+    this.style.position = 'relative';
+    this.style.overflow = 'hidden';
+    this.style.contain = 'strict';
+    this.style.lineHeight = 0;
 
     this._onNodesChanged = this._childNodesChanged.bind(this);
     this._onNodesChanged();
@@ -49,6 +35,8 @@ class DryStoneLayoutElement extends HTMLElement {
 
     this._onResize = this._debounce(this._render.bind(this), this.debounce);
     this._resizeListener = window.addEventListener('resize', this._onResize, false);
+
+    requestAnimationFrame(this._render.bind(this));
   }
 
   disconnectedCallback() {
@@ -75,6 +63,7 @@ class DryStoneLayoutElement extends HTMLElement {
         this.width = parseInt(newValue);
         break;
     }
+    this._needsRender = true;
     this._render();
   }
 
@@ -88,145 +77,54 @@ class DryStoneLayoutElement extends HTMLElement {
   }
 
   _childNodesChanged() {
-    var nodes = this._slot.assignedNodes().filter(n => n.nodeType == Node.ELEMENT_NODE && n.tagName !== "TEMPLATE" && n.tagName !== "DOM-REPEAT");
-    this._dimensions = nodes
-    .map(n => {
-      let w = n.width || n.clientWidth;
-      let h = n.height || n.clientHeight;
-      return { node: n, width: w, height: h, aspect: w / h };
+    this.nodes = this._slot.assignedNodes().filter(n => n.nodeType == Node.ELEMENT_NODE && n.tagName !== "TEMPLATE" && n.tagName !== "DOM-REPEAT");
+    this.nodes.forEach(node => {
+      node.style.position = 'absolute';
+      node.style.transformOrigin = '0 0';
     });
+    this.sizes = this.nodes.map(n => ({ width: n.width || n.clientWidth, height: n.height || n.clientHeight }));
+    this.aspects = this.sizes.map(s => s.width / s.height);
+    this._needsRender = true;
     this._render();
   }
 
+  // adapted some ideas from https://github.com/jonathanong/horizontal-grid-packing
   _render() {
-    var width = this.width || this.clientWidth;
-    // console.log(width, this._dimensions);
-    if (!width) return;
-    if (!this._dimensions || this._dimensions.length === 0) return;
+    if (!this._needsRender && this.width === this.clientWidth) return;
 
-    var totalWidth = this._dimensions.reduce((total, dimension) => { return total + this.targetHeight * dimension.aspect}, 0);
+    this.width = this.clientWidth;
 
-    var i, j, k, n, positions = [], elementCount;
+    if (!this.width) return;
+    if (!this.sizes || this.sizes.length === 0) return;
 
-    var dimensions = this._dimensions;
-    var containerWidth = this.width || this.clientWidth;
-    var idealHeight = this.targetHeight;
-    var summedWidth = totalWidth;
-    var spacing = this.spacing;
+    var rowsNeeded = Math.max(Math.min(Math.floor(this.aspects.reduce(this.add, 0) * this.targetHeight / this.width), this.aspects.length), 1)
+    var partitions = this._linear_partition(this.aspects, rowsNeeded);
+    var index = 0;
+    this.rows = [];
+    partitions.forEach(x => index += this.createRow(index, x.length));
 
-    // calculate rows needed
-    var rowsNeeded = Math.round(summedWidth / containerWidth);
-
-    if (rowsNeeded < 1) {
-      // (2a) Fallback to just standard size
-      var xSum = 0;
-      elementCount = dimensions.length;
-
-      var padLeft = 0;
-
-      for (var i = 0; i < elementCount; i++) {
-        var width = Math.round(idealHeight * dimensions[i].aspect) - (spacing * (elementCount - 1) / elementCount);
-        positions.push({
-          y: 0,
-          x: padLeft + xSum,
-          width: width,
-          height: idealHeight
-        });
-        xSum += width;
-        if (i !== n - 1) {
-          xSum += spacing;
-        }
-      }
-      ySum = idealHeight;
-    } else {
-      // (2b) Distribute elements over rows using the aspect ratio as weight
-      var weights = dimensions.map(function(d) { return d.aspect * 100; });
-      var partitions = this._linear_partition(weights, rowsNeeded);
-      var index = 0;
-      var ySum = 0, xSum;
-      for (i = 0, n = partitions.length; i < n; i++) {
-        var element_index = index;
-        var summedRatios = 0;
-        for (j = 0, k = partitions[i].length; j < k; j++) {
-          summedRatios += dimensions[element_index + j].aspect;
-          index++;
-        }
-
-        xSum = 0;
-        var height = Math.round(containerWidth / summedRatios);
-        elementCount = partitions[i].length;
-        for (j = 0; j < elementCount; j++) {
-          width = Math.round((containerWidth - (elementCount - 1) * spacing) / summedRatios * dimensions[element_index + j].aspect);
-          var item = {
-            y: ySum,
-            x: xSum,
-            width: width,
-            height: height
-          };
-          positions.push(item);
-          xSum += width;
-          if (j !== elementCount - 1) {
-            xSum += spacing;
-          }
-        }
-
-        // jiggle values to make fit exactly (because 'rounding' and spacing ...)
-        // TODO: tidy up and check logic (esp. escaping the loop)
-        //       shrink widest images, widen narrowest etc...
-        var offset = positions.length - 1;
-        while (xSum !== containerWidth) {
-          for (j = 0; j < elementCount; j++) {
-            var item = positions[offset - j];
-            if (xSum > containerWidth) {
-              item.width--;
-              xSum--;
-              if (j > 0) {
-                for (k = 0; k < j; k++) {
-                  positions[offset - k].x--;
-                }
-              }
-            } else if (xSum < containerWidth) {
-              item.width++;
-              xSum++;
-              if (j > 0) {
-                for (k = 0; k < j; k++) {
-                  positions[offset - k].x++;
-                }
-              }
-            }
-          }
-        }
-
-        ySum += height;
-        if (i !== n - 1) {
-          ySum += spacing;
-        }
-      }
-    }
-
-    var layout = {
-      width: containerWidth,
-      height: ySum,
-      positions: positions
-    };
+    this.height = this.rows[this.rows.length - 1].top + this.rows[this.rows.length - 1].height;
+    this._needsRender = false;
 
     requestAnimationFrame(() => {
-      layout.positions.forEach((position, i) => {
-        var scaleX, scaleY, style;
-        var dimension = this._dimensions[i];
-        var aspect = dimension.aspect;
-        scaleX = position.width / dimension.width;
-        scaleY = position.height / dimension.height;
-        var transform = 'translate(' + position.x + 'px,' + position.y + 'px) scale(' + scaleX.toFixed(6) + ',' + scaleY.toFixed(6) + ')';
-        dimension.node.style.transform = transform;
-      });
-
-      // update our own height to account for the new layout and notify anyone who cares
-      this.height = layout.height;
-      this.style.height = layout.height + 'px';
+      for(var r = 0; r < this.rows.length; r++) {
+        var row = this.rows[r];
+        for(var c = 0; c < row.count; c ++) {
+          var index = row.index + c;
+          var item = row.items[c];
+          var node = this.nodes[index];
+          var size = this.sizes[index];
+          var aspect = this.aspects[index];
+          var scaleX = item.width / size.width;
+          var scaleY = item.height / size.height;
+          var transform = 'translate(' + item.left + 'px,' + item.top + 'px) scale(' + scaleX.toFixed(8) + ',' + scaleY.toFixed(8) + ')';
+          node.style.transform = transform;
+        }
+      }
+      this.style.height = this.height + 'px';
 
       // remove loading style override which prevented animation of the initial layout
-      if (this.loading && positions.length > 0) {
+      if (this.loading) {
         this.loading = false;
         requestAnimationFrame(() => {
           this.removeAttribute('loading');
@@ -234,6 +132,39 @@ class DryStoneLayoutElement extends HTMLElement {
         });
       }
     });
+  }
+
+  createRow(index, count) {
+    var aspects = this.aspects.slice(index, index + count);
+    var row = {
+      index: index,
+      count: count,
+      top: this.rows.length ? this.rows[this.rows.length - 1].top + this.rows[this.rows.length - 1].height + this.spacing : 0,
+      height: this.calculateRowHeight(aspects),
+      items: []
+    }
+
+    var left = 0;
+    aspects.forEach((aspect, i) => {
+      var width = row.height * aspect;
+      row.items[i] = {
+        top: row.top,
+        left: left,
+        width: width,
+        height: row.height
+      }
+      left += width + this.spacing;
+    })
+    this.rows.push(row);
+    return count;
+  }
+
+  calculateRowHeight(images) {
+    return (this.width - (this.spacing * (images.length - 1))) / images.reduce(this.add, 0);
+  }
+
+  add(a, b) {
+    return a + b;
   }
 
   // see: https://github.com/crispymtn/linear-partition
