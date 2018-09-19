@@ -1,3 +1,5 @@
+[![Published on Vaadin  Directory](https://img.shields.io/badge/Vaadin%20Directory-published-00b4f0.svg)](https://vaadin.com/directory/component/CaptainCodemandry-stone-layout)
+[![Stars on vaadin.com/directory](https://img.shields.io/vaadin-directory/star/CaptainCodemandry-stone-layout.svg)](https://vaadin.com/directory/component/CaptainCodemandry-stone-layout)
 [![Published on webcomponents.org](https://img.shields.io/badge/webcomponents.org-published-blue.svg)](https://www.webcomponents.org/element/CaptainCodeman/dry-stone-layout)
 
 _[Demo and API docs](http://captaincodeman.github.io/dry-stone-layout/)_
