@@ -1,10 +1,11 @@
-<link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/paper-slider/paper-slider.html">
-<link rel="import" href="../bower_components/paper-button/paper-button.html">
-<link rel="import" href="../dry-stone-layout.html">
-
-<dom-module id="x-adjustable">
-  <template>
+import '@polymer/polymer/polymer-legacy.js';
+import '@polymer/paper-slider/paper-slider.js';
+import '@polymer/paper-button/paper-button.js';
+import '../dry-stone-layout.js';
+import { Polymer } from '@polymer/polymer/lib/legacy/polymer-fn.js';
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+Polymer({
+  _template: html`
     <style>
       dry-stone-layout {
         transition: height 0.5s ease-in-out;
@@ -24,7 +25,7 @@
     <p><label>Size</label><paper-slider min="40" max="240" value="90" immediate-value="{{size}}"></paper-slider></p>
     <p><label>Spacing</label><paper-slider min="0" max="10" value="1" immediate-value="{{spacing}}"></paper-slider></p>
 
-    <dry-stone-layout target-height$="[[size]]" spacing$="[[spacing]]">
+    <dry-stone-layout target-height\$="[[size]]" spacing\$="[[spacing]]">
       <img src="14117348070_bbf190b521_m.jpg" width="240" height="163">
       <img src="28738913666_d7f288ae25_m.jpg" width="240" height="180">
       <img src="28808871375_dc652d8972_m.jpg" width="160" height="240">
@@ -41,11 +42,7 @@
       <img src="33001221391_6afee89be5_m.jpg" width="240" height="159">
       <img src="33186065675_95b54548da_m.jpg" width="240" height="120">
     </dry-stone-layout>
-  </template>
+`,
 
-  <script>
-    Polymer({
-      is: 'x-adjustable'
-    });
-  </script>
-</dom-module>
+  is: 'x-adjustable'
+});

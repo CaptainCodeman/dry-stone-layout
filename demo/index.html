@@ -6,26 +6,45 @@
 
     <title>dry-stone-layout demo</title>
 
-    <script src="../bower_components/webcomponentsjs/webcomponents-loader.js"></script>
+    <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
 
-    <script>
-    </script>
-    <link rel="import" href="../bower_components/iron-demo-helpers/demo-pages-shared-styles.html">
-    <link rel="import" href="../bower_components/iron-demo-helpers/demo-snippet.html">
-    <link rel="import" href="../bower_components/paper-slider/paper-slider.html">
-    <link rel="import" href="../bower_components/paper-button/paper-button.html">
+    <script type="module">
+import '@polymer/iron-demo-helpers/demo-pages-shared-styles.js';
+import '@polymer/iron-demo-helpers/demo-snippet.js';
+import '@polymer/paper-slider/paper-slider.js';
+import '@polymer/paper-button/paper-button.js';
+import './adjustable.js';
+import './dynamic.js';
+import '../dry-stone-layout.js';
+</script>
+    <script type="module" src="../node_modules/@polymer/iron-demo-helpers/demo-pages-shared-styles.js"></script>
+    <script type="module" src="../node_modules/@polymer/iron-demo-helpers/demo-snippet.js"></script>
+    <script type="module" src="../node_modules/@polymer/paper-slider/paper-slider.js"></script>
+    <script type="module" src="../node_modules/@polymer/paper-button/paper-button.js"></script>
     <!--
     <link rel="import" href="../dry-stone-layout.html">
     -->
-    <link rel="import" href="adjustable.html">
-    <link rel="import" href="dynamic.html">
-    <link rel="import" href="../dry-stone-layout.html">
+    <script type="module" src="./adjustable.js"></script>
+    <script type="module" src="./dynamic.js"></script>
+    <script type="module" src="../dry-stone-layout.js"></script>
 
     <!--
     <script src="../dry-stone-layout.js"></script>
     -->
 
-    <style is="custom-style" include="demo-pages-shared-styles">
+    <!-- FIXME(polymer-modulizer):
+        These imperative modules that innerHTML your HTML are
+        a hacky way to be sure that any mixins in included style
+        modules are ready before any elements that reference them are
+        instantiated, otherwise the CSS @apply mixin polyfill won't be
+        able to expand the underlying CSS custom properties.
+        See: https://github.com/Polymer/polymer-modulizer/issues/154
+        -->
+    <script type="module">
+const $_documentContainer = document.createElement('template');
+$_documentContainer.setAttribute('style', 'display: none;');
+
+$_documentContainer.innerHTML = `<style is="custom-style" include="demo-pages-shared-styles">
       dry-stone-layout {
         transition: height 0.5s ease-in-out;
       }
@@ -48,10 +67,16 @@
       .g { width: 160px; height: 240px; background-color: #aca; }
       .b { width: 240px; height: 160px; background-color: #aac; }
       */
-    </style>
+    </style>`;
+
+document.head.appendChild($_documentContainer.content);
+</script>
   </head>
   <body>
-    <dry-stone-layout target-height="60" spacing="1" debounce="60">
+    <script type="module">
+const $_documentContainer = document.createElement('template');
+
+$_documentContainer.innerHTML = `<dry-stone-layout target-height="60" spacing="1" debounce="60">
       <img src="14117348070_bbf190b521_m.jpg" width="240" height="163">
       <img src="28738913666_d7f288ae25_m.jpg" width="240" height="180">
       <img src="28808871375_dc652d8972_m.jpg" width="160" height="240">
@@ -67,10 +92,21 @@
       <img src="32873865786_1c825895f3_m.jpg" width="240" height="145">
       <img src="33001221391_6afee89be5_m.jpg" width="240" height="159">
       <img src="33186065675_95b54548da_m.jpg" width="240" height="120">
-    </dry-stone-layout>
+    </dry-stone-layout>`;
 
-    <x-adjustable></x-adjustable>
-    <x-dynamic></x-dynamic>
+document.body.appendChild($_documentContainer.content);
+</script>
+
+    <script type="module">
+const $_documentContainer = document.createElement('template');
+$_documentContainer.innerHTML = `<x-adjustable></x-adjustable>`;
+document.body.appendChild($_documentContainer.content);
+</script>
+    <script type="module">
+const $_documentContainer = document.createElement('template');
+$_documentContainer.innerHTML = `<x-dynamic></x-dynamic>`;
+document.body.appendChild($_documentContainer.content);
+</script>
     <!--
 
     <div class="vertical-section-container xcentered">
