@@ -6,10 +6,10 @@
 
     <title>dry-stone-layout test</title>
 
-    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-    <script src="../../web-component-tester/browser.js"></script>
+    <script src="../../@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
+    <script src="../../wct-browser-legacy/browser.js"></script>
 
-    <link rel="import" href="../dry-stone-layout.html">
+    <script type="module" src="../dry-stone-layout.js"></script>
   </head>
   <body>
     <test-fixture id="basic">
@@ -18,18 +18,19 @@
       </template>
     </test-fixture>
 
-    <script>
-      suite('dry-stone-layout', function() {
-        test('instantiating the element works', function() {
-          var element = fixture('basic');
-          assert.equal(element.is, 'dry-stone-layout');
-        });
+    <script type="module">
+import '../dry-stone-layout.js';
+suite('dry-stone-layout', function() {
+  test('instantiating the element works', function() {
+    var element = fixture('basic');
+    assert.equal(element.is, 'dry-stone-layout');
+  });
 
-        // TODO: test for:
-        //       loading flag being removed
-        //       layout positions (known child sizes + container width)
-        //       position updates after changes to child dom (via dom + dom-repeat)
-      });
-    </script>
+  // TODO: test for:
+  //       loading flag being removed
+  //       layout positions (known child sizes + container width)
+  //       position updates after changes to child dom (via dom + dom-repeat)
+});
+</script>
   </body>
 </html>
