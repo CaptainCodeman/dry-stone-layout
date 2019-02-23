@@ -185,6 +185,8 @@ class DryStoneLayout extends PolymerElement {
 
   // see: https://github.com/crispymtn/linear-partition
   _linear_partition(seq, k) {
+    try {
+
     var ans, i, j, m, n, solution, table, x, y, _i, _j, _k, _l;
     var _m, _nn;
 
@@ -281,6 +283,10 @@ class DryStoneLayout extends PolymerElement {
         return _results;
       })()
     ].concat(ans);
+  } catch (e) {
+      console.log("error occured");
+      window.setTimeout(() => this._linear_partition(seq, k), 100)
+    }
   }
 }
 
